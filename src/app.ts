@@ -8,7 +8,7 @@ app.get('/health', (req,res) => {
 });
 
 app.post("/use-graph", async (req, res) => {
-   const result = await useGraph("What is the capital of France?");
+   const result = await useGraph("Write an factorial function in JavaScript");
    res.status(200).json({
      result
    });

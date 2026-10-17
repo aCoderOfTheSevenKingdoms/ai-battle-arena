@@ -16,7 +16,11 @@ const State = new StateSchema({
             return next;
         }
     }),
-    judge_recommendation: new ReducedValue(z.object().default({
+    judge_recommendation: new ReducedValue(z.object({
+        solution_1_score: z.number(),
+        solution_2_score: z.number(),
+        winner: z.enum(["solution_1", "solution_2"])
+    }).default({
         solution_1_score: 0,
         solution_2_score: 0, 
         winner: "solution_1" as "solution_1" | "solution_2"
@@ -27,11 +31,12 @@ const State = new StateSchema({
     })
 });
 
-const solutionNode = async (state: typeof State) => {
-    
+const solutionNode: typeof State.Node = async (state) => {
+    const userPrompt = state.messages?.[0]?.text ?? ""; 
+
     const [groq_solution, cohere_solution] = await Promise.all([
-        groqModel.invoke(state.messages[0].text),
-        cohereModel.invoke(state.messages[0].text)
+        groqModel.invoke(userPrompt),
+        cohereModel.invoke(userPrompt)
     ]);
 
     return {
@@ -40,21 +45,22 @@ const solutionNode = async (state: typeof State) => {
     }
 }
 
-const judgeNode = async (state: typeof State) => {
+const judgeNode: typeof State.Node = async (state) => {
     const {solution_1, solution_2} = state;
     const judge = createAgent({
         model: geminiModel,
         tools: [],
         responseFormat: providerStrategy(z.object({
             solution_1_score: z.number().min(0).max(10),
-            solution_2_score: z.number().min(0).max(10)
+            solution_2_score: z.number().min(0).max(10),
+            winner: z.enum(["solution_1", "solution_2"])
         }))
     });
 
     const judgeResponse = await judge.invoke({
         messages: [
             new HumanMessage(
-                `You are a judge tasked with evaluating the quality of two solutions to a problem. The problem is: ${state.messages[0].text}. The first solution is: ${solution_1}. The second solution is: ${solution_2}. Please provide a score between 0 and 10 for each solution, where 0 means the solution is completely incorrect or irrelevant, and 10 means the solution is perfect and fully addresses the problem.`
+                `You are a judge tasked with evaluating the quality of two solutions to a problem. The problem is: ${state.messages?.[0]?.text ?? ""}. The first solution is: ${solution_1}. The second solution is: ${solution_2}. Please provide a score between 0 and 10 for each solution, where 0 means the solution is completely incorrect or irrelevant, and 10 means the solution is perfect and fully addresses the problem.`
             )
         ]
     });
@@ -67,8 +73,10 @@ const judgeNode = async (state: typeof State) => {
 
 const graph = new StateGraph(State)
    .addNode("solution", solutionNode)
+   .addNode("judge", judgeNode)
    .addEdge(START, "solution")
-   .addEdge("solution", END)
+   .addEdge("solution", "judge")
+   .addEdge("judge", END)
    .compile();
 
 export default async function(userMessage: string) {

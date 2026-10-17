@@ -4,7 +4,7 @@ import {ChatCohere} from "@langchain/cohere";
 import {ChatGroq} from "@langchain/groq";
 
 export const geminiModel = new ChatGoogle({
-    model: "gemini-3-flash",
+    model: "gemini-3.1-flash-lite",
     apiKey: config.GEMINI_API_KEY
 });
 

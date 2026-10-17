@@ -2,7 +2,7 @@ import "dotenv/config";
 
 /**
  * Config object contains:
- * GEMIN_API_KEY, GROQ_API_KEY, COHERE_API_KEY
+ * GEMINI_API_KEY, GROQ_API_KEY, COHERE_API_KEY
  * readonly properties cannot be modified
 */
 type CONFIG = {
@@ -12,7 +12,7 @@ type CONFIG = {
 }
 
 const config: CONFIG = {
-    GEMINI_API_KEY: process.env.GEMIN_API_KEY || "",
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
     GROQ_API_KEY: process.env.GROQ_API_KEY || "",
     COHERE_API_KEY: process.env.COHERE_API_KEY || ""
 }
