@@ -1,5 +1,5 @@
 import express from 'express';
-import useGraph from "./services/graph.ai.service.js";
+import runGraph from "./services/graph.ai.service.js";
 
 const app = express();
 
@@ -8,7 +8,7 @@ app.get('/health', (req,res) => {
 });
 
 app.post("/use-graph", async (req, res) => {
-   const result = await useGraph("Write an factorial function in JavaScript");
+   const result = await runGraph("Write an code for factorial function in JavaScript");
    res.status(200).json({
      result
    });
