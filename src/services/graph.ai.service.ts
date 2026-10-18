@@ -1,4 +1,4 @@
-import { StateGraph, StateSchema, type GraphNode, START, END } from "@langchain/langgraph";
+import { StateGraph, StateSchema, type GraphNode, START, END, type CompiledStateGraph } from "@langchain/langgraph";
 import z from "zod";
 import { cohereModel, geminiModel, groqModel } from "./models.service.js";
 import { createAgent, HumanMessage, providerStrategy } from "langchain";
@@ -82,7 +82,7 @@ const judgeNode: GraphNode<typeof state> = async (state) => {
     }
 }
 
-const graph = new StateGraph(state)
+const graph= new StateGraph(state)
    .addNode("solution", solutionNode)
    .addNode("judge_node", judgeNode)
    .addEdge(START, "solution")
